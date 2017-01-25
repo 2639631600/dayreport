@@ -1,0 +1,126 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+1需要安装Oracle Client
+2需要安装cx_Oracle,命令：pip install cx_Oracle
+"""
+import smtplib
+import email.mime.multipart
+import email.mime.text
+import email.mime.base
+import os.path
+import cx_Oracle
+import xlwt
+import time
+import pdb
+
+
+'连接oracle数据库'
+
+__author__ = 'jeff'
+
+# 生成excel文件名
+v_curr_time = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
+v_file_name = '发证统计日报表-' + v_curr_time + '.xls '
+
+# 连接数据库
+conn = cx_Oracle.connect("bdck", "salis", "localhost:1521/orcl")
+cur1 = conn.cursor()
+
+# 组查询语句，如果是多行结尾需要加反斜杠连接
+v_sql = "SELECT  ID, PRINTTYPE, PRINTTIME, PRINTSTAFF, PROJECT_ID " \
+        "FROM    BDCS_PRINTRECORD " \
+        "WHERE   printtype = 'SFDJ' "
+print(v_sql)
+cur1.execute(v_sql)
+rows = cur1.fetchall()
+v_cnt = len(rows)
+
+# 生成excel文件
+book = xlwt.Workbook()
+sheet1 = book.add_sheet('Sheet1')
+
+# 把列名当作一行数据写入
+sheet1.write(0, 0, '序号')
+sheet1.write(0, 1, '打印类型')
+sheet1.write(0, 2, '打印时间')
+sheet1.write(0, 3, '打印职员')
+sheet1.write(0, 4, '项目编号')
+
+# 当查出多列数据时，需要一个cell一个cell的写入，要不然这四列就会写到excel的一个cell里
+for i in range(len(rows)):
+    # sheet1.write有几行range()中写几行
+    for j in range(5):
+        # print (rows[i][j])
+        # print ("--------")
+        sheet1.write(i + 1, j, rows[i][j])
+
+book.save(v_file_name)
+cur1.close()
+conn.close()
+pdb.set_trace()
+# 邮件信息
+From = "aaaa@ccc.com"
+To = "bbbb@ccc.com"
+file_name = v_file_name
+
+server = smtplib.SMTP("mail.ccc.com")
+server.login("aaaa", "password")  # 仅smtp服务器需要验证时
+
+# 构造MIMEMultipart对象做为根容器
+main_msg = email.mime.multipart.MIMEMultipart()
+
+# 构造MIMEText对象做为邮件显示内容并附加到根容器
+# v_str = "星巴克活动报表，数据共" + v_cnt + "行"
+text_msg = email.mime.text.MIMEText("理财APP星巴克活动报备，昨日首投数据，请查收，谢谢。")
+main_msg.attach(text_msg)
+
+# 构造MIMEBase对象做为文件附件内容并附加到根容器
+contype = v_file_name
+maintype, subtype = contype.split(' ')
+
+## 读入文件内容并格式化
+data = open(file_name, 'rb')
+file_msg = email.mime.base.MIMEBase(maintype, subtype)
+file_msg.set_payload(data.read())
+data.close()
+email.encoders.encode_base64(file_msg)
+
+## 设置附件头
+basename = os.path.basename(file_name)
+file_msg.add_header('Content-Disposition',
+                    'attachment', filename=basename)
+main_msg.attach(file_msg)
+
+# 设置根容器属性
+main_msg['From'] = From
+main_msg['To'] = To
+main_msg['Subject'] = "理财APP:STORY #889::7.17星巴克活动报备 "
+main_msg['Date'] = email.utils.formatdate()
+
+# 得到格式化后的完整文本
+fullText = main_msg.as_string()
+
+# 用smtp发送邮件
+try:
+    server.sendmail(From, To, fullText)
+    print("发送成功")
+except Exception as e:
+    print("发送失败")
+    print(str(e))
+finally:
+    server.quit()
+
+
+def test():
+    pass
+
+
+"""
+当我们在命令行运行hello模块文件时，Python解释器把一个特殊变量
+__name__置为__main__，而如果在其他地方导入该hello模块时，if判
+断将失败，因此，这种if测试可以让一个模块通过命令行运行时执行一
+些额外的代码，最常见的就是运行测试。下面的代码常常放在最后。
+"""
+if __name__ == '__main__':
+    test()
