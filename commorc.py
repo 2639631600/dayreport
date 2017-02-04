@@ -39,6 +39,7 @@ v_yesterday_weekday = time.localtime(time.time() - 24*60*60).tm_wday
 v_curr_weekday = time.localtime(time.time()).tm_wday
 
 #获得文件路径
+
 #获取脚本文件的当前路径
 def cur_file_dir():
      #获取脚本路径
@@ -50,6 +51,8 @@ def cur_file_dir():
          return os.path.dirname(path)
 
 file_path = cur_file_dir() 
+
+v_file_name = file_path + '\\report\\' + v_friday + v_curr_time + '.xls '
 #print(file_path)
 #pdb.set_trace()
 # 连接数据库
@@ -187,14 +190,24 @@ def email2sm(fromstr, tostr, fname):
         print(str(e))
     finally:
         server.quit()
+        
+        
+def main(status = 1):
+    if status == 1:
+        if v_curr_weekday == 0 : # 如果当天是周一
+            data_date = v_friday
+            v_file_name = file_path + '\\report\\' + v_friday + v_curr_time + '.xls '
+            data2excle(data_date)
+            email2sm("1059297224@qq.com", ['1181389875@qq.com','1059297224@qq.com'], v_file_name)
+        elif v_curr_weekday <= 5 and v_curr_weekday > 0:# 如果当天是工作日
+            data_date = v_yesterday
+            v_file_name = file_path + '\\report\\' + v_yesterday + v_curr_time + '.xls '
+            data2excle(data_date)
+            email2sm("1059297224@qq.com", ['1181389875@qq.com','1059297224@qq.com'], v_file_name)
+    else:
+        data_date = v_curr_date
+        v_file_name = file_path + '\\report\\' + data_date + v_curr_time + '.xls '
+        data2excle(data_date)
 
-if v_curr_weekday == 0 : # 如果当天是周一
-    data_date = v_friday
-    v_file_name = file_path + '\\report\\' + v_friday + v_curr_time + '.xls '
-    data2excle(data_date)
-    email2sm("1059297224@qq.com", ['1181389875@qq.com','1059297224@qq.com'], v_file_name)
-elif v_curr_weekday <= 5 and v_curr_weekday > 0:# 如果当天是工作日
-    data_date = v_yesterday
-    v_file_name = file_path + '\\report\\' + v_yesterday + v_curr_time + '.xls '
-    data2excle(data_date)
-    email2sm("1059297224@qq.com", ['1181389875@qq.com','1059297224@qq.com'], v_file_name)
+if __name__ == '__main__':
+    main(sys.argv[:])
