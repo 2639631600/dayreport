@@ -52,11 +52,11 @@ def cur_file_dir():
 
 file_path = cur_file_dir() 
 
-v_file_name = file_path + '\\report\\' + v_friday + v_curr_time + '.xls '
+# v_file_name = file_path + '\\report\\' + v_friday + v_curr_time + '.xls '
 #print(file_path)
 #pdb.set_trace()
 # 连接数据库
-def data2excle(expdate):
+def data2excle(expdate,v_file_name):
     conn = cx_Oracle.connect("bdck", "wqsalis", "10.88.112.25:1521/wqorcl")
     cur1 = conn.cursor()
     # 组查询语句，如果是多行结尾需要加反斜杠连接
@@ -197,17 +197,21 @@ def main(status = 1):
         if v_curr_weekday == 0 : # 如果当天是周一
             data_date = v_friday
             v_file_name = file_path + '\\report\\' + v_friday + v_curr_time + '.xls '
-            data2excle(data_date)
+            data2excle(data_date,v_file_name)
             email2sm("1059297224@qq.com", ['1181389875@qq.com','1059297224@qq.com'], v_file_name)
         elif v_curr_weekday <= 5 and v_curr_weekday > 0:# 如果当天是工作日
             data_date = v_yesterday
             v_file_name = file_path + '\\report\\' + v_yesterday + v_curr_time + '.xls '
-            data2excle(data_date)
+            data2excle(data_date,v_file_name)
             email2sm("1059297224@qq.com", ['1181389875@qq.com','1059297224@qq.com'], v_file_name)
     else:
         data_date = v_curr_date
         v_file_name = file_path + '\\report\\' + data_date + v_curr_time + '.xls '
-        data2excle(data_date)
+        data2excle(data_date,v_file_name)
+        f = 'start excel.exe ' + v_file_name
+        time.sleep(1)
+        os.system(f)
+        
 
 if __name__ == '__main__':
     main(sys.argv[:])
