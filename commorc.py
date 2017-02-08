@@ -156,7 +156,7 @@ def email2sm(fromstr, tostr, fname):
     main_msg.attach(text_msg)
 
     # 构造MIMEBase对象做为文件附件内容并附加到根容器
-    contype = v_file_name
+    contype = fname
     # maintype, subtype = contype.split(' ') # 这里用了空格所以v_file_name文件扩展名后面要加一个空格
     maintype, subtype = contype.split(' ')
     ## 读入文件内容并格式化
@@ -192,16 +192,17 @@ def email2sm(fromstr, tostr, fname):
         server.quit()
         
         
-def main(status = 1):
-    if status == 1:
+def main(status = '1'):
+    if status == '1':
         if v_curr_weekday == 0 : # 如果当天是周一
             data_date = v_friday
             v_file_name = file_path + '\\report\\' + v_friday + v_curr_time + '.xls '
             data2excle(data_date,v_file_name)
-            email2sm("1059297224@qq.com", ['1181389875@qq.com','1059297224@qq.com'], v_file_name)
+            email2sm("1059297224@qq.com", ['1181389875@qq.com','1059297224@qq.com'], v_file_name) # 1181389875
         elif v_curr_weekday <= 5 and v_curr_weekday > 0:# 如果当天是工作日
             data_date = v_yesterday
             v_file_name = file_path + '\\report\\' + v_yesterday + v_curr_time + '.xls '
+            print(v_file_name)
             data2excle(data_date,v_file_name)
             email2sm("1059297224@qq.com", ['1181389875@qq.com','1059297224@qq.com'], v_file_name)
     else:
@@ -214,4 +215,4 @@ def main(status = 1):
         
 
 if __name__ == '__main__':
-    main(sys.argv[:])
+    main(sys.argv[1])
